@@ -1,16 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Solitaire</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Solitaire Game</title>
+    <style>
+        body { font-family: Arial; background: #2d5016; margin: 0; padding: 20px; }
+        
+        #game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .top-area {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .pile {
+            width: 100px;
+            height: 140px;
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 30px;
+        }
+        
+        .card {
+            width: 100px;
+            height: 140px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .card.face-down {
+            background: #0066cc;
+            font-size: 50px;
+        }
+        
+        .foundation-area {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .tableau-area {
+            display: grid;
+            grid-template-columns: repeat(7, 120px);
+            gap: 20px;
+        }
+        
+        .tableau-column {
+            min-height: 300px;
+            border: 1px dashed rgba(255,255,255,0.3);
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="stock"></div>
-        <div id="waste"></div>
-        <div id="foundations"></div>
-        <div id="tableau"></div>
-    </div>
+    <div id="game-container"></div>
     <script src="solitaire.js"></script>
 </body>
 </html>
