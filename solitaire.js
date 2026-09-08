@@ -56,7 +56,6 @@ class Solitaire {
     }
     
     initialize() {
-        // タブロー初期化
         for (let col = 0; col < 7; col++) {
             for (let row = 0; row <= col; row++) {
                 const card = this.deck.draw();
@@ -92,6 +91,12 @@ class Solitaire {
         return card.suit === topCard.suit && card.getValue() === topCard.getValue() + 1;
     }
     
+    canMoveFromFoundation(card, targetCard) {
+        if (!targetCard) return false;
+        return card.getColor() !== targetCard.getColor() &&
+               card.getValue() === targetCard.getValue() - 1;
+    }
+    
     moveInTableau(fromCol, toCol) {
         const fromPile = this.tableau[fromCol];
         const toPile = this.tableau[toCol];
@@ -118,6 +123,8 @@ class Solitaire {
             card = this.waste[this.waste.length - 1];
         } else if (fromType === 'tableau' && this.tableau[fromIndex].length > 0) {
             card = this.tableau[fromIndex][this.tableau[fromIndex].length - 1];
+        } else if (fromType === 'foundation' && this.foundations[fromIndex].length > 0) {
+            card = this.foundations[fromIndex][this.foundations[fromIndex].length - 1];
         }
         
         if (!card) return false;
@@ -126,15 +133,33 @@ class Solitaire {
             if (this.canMoveToFoundation(card, i)) {
                 if (fromType === 'waste') {
                     this.waste.pop();
-                } else {
+                } else if (fromType === 'tableau') {
                     this.tableau[fromIndex].pop();
                     if (this.tableau[fromIndex].length > 0 && !this.tableau[fromIndex][this.tableau[fromIndex].length - 1].faceUp) {
                         this.tableau[fromIndex][this.tableau[fromIndex].length - 1].faceUp = true;
                     }
+                } else if (fromType === 'foundation') {
+                    this.foundations[fromIndex].pop();
                 }
                 this.foundations[i].push(card);
                 return true;
             }
+        }
+        return false;
+    }
+    
+    moveFromFoundationToTableau(foundationIndex, tableauIndex) {
+        const foundation = this.foundations[foundationIndex];
+        const tableau = this.tableau[tableauIndex];
+        
+        if (foundation.length === 0) return false;
+        
+        const card = foundation[foundation.length - 1];
+        const targetCard = tableau.length > 0 ? tableau[tableau.length - 1] : null;
+        
+        if (this.canMoveFromFoundation(card, targetCard) || (!targetCard && card.rank === 'K')) {
+            tableau.push(foundation.pop());
+            return true;
         }
         return false;
     }
@@ -147,6 +172,8 @@ class Solitaire {
 class GameUI {
     constructor() {
         this.game = new Solitaire();
+        this.draggedElement = null;
+        this.draggedData = null;
         this.init();
     }
     
@@ -158,7 +185,6 @@ class GameUI {
         const container = document.getElementById('game-container');
         container.innerHTML = '';
         
-        // ストック＆ウェイスト
         const topArea = document.createElement('div');
         topArea.className = 'top-area';
         
@@ -167,6 +193,8 @@ class GameUI {
         stockDiv.id = 'stock';
         stockDiv.textContent = this.game.stock.length > 0 ? `📦 ${this.game.stock.length}` : '空';
         stockDiv.onclick = () => this.onStockClick();
+        stockDiv.ondragover = (e) => this.handleDragOver(e);
+        stockDiv.ondrop = (e) => this.handleDropOnStock(e);
         topArea.appendChild(stockDiv);
         
         const wasteDiv = document.createElement('div');
@@ -175,6 +203,11 @@ class GameUI {
         if (this.game.waste.length > 0) {
             const card = this.game.waste[this.game.waste.length - 1];
             wasteDiv.innerHTML = this.renderCardHTML(card);
+            const cardElement = wasteDiv.querySelector('.card');
+            if (cardElement) {
+                cardElement.draggable = true;
+                cardElement.ondragstart = (e) => this.handleDragStart(e, 'waste', -1);
+            }
         } else {
             wasteDiv.textContent = '空';
         }
@@ -182,7 +215,6 @@ class GameUI {
         
         container.appendChild(topArea);
         
-        // ファンデーション
         const foundationArea = document.createElement('div');
         foundationArea.className = 'foundation-area';
         const suits = ['♠', '♥', '♦', '♣'];
@@ -190,9 +222,18 @@ class GameUI {
         this.game.foundations.forEach((foundation, i) => {
             const div = document.createElement('div');
             div.className = 'pile foundation';
+            div.id = `foundation-${i}`;
+            div.ondragover = (e) => this.handleDragOver(e);
+            div.ondrop = (e) => this.handleDropOnFoundation(e, i);
+            
             if (foundation.length > 0) {
                 const card = foundation[foundation.length - 1];
                 div.innerHTML = this.renderCardHTML(card);
+                const cardElement = div.querySelector('.card');
+                if (cardElement) {
+                    cardElement.draggable = true;
+                    cardElement.ondragstart = (e) => this.handleDragStart(e, 'foundation', i);
+                }
             } else {
                 div.innerHTML = `<div class="empty-foundation">${suits[i]}</div>`;
             }
@@ -201,7 +242,6 @@ class GameUI {
         
         container.appendChild(foundationArea);
         
-        // タブロー
         const tableauArea = document.createElement('div');
         tableauArea.className = 'tableau-area';
         
@@ -209,21 +249,29 @@ class GameUI {
             const colDiv = document.createElement('div');
             colDiv.className = 'tableau-column';
             colDiv.id = `tableau-${colIndex}`;
+            colDiv.ondragover = (e) => this.handleDragOver(e);
+            colDiv.ondrop = (e) => this.handleDropOnTableau(e, colIndex);
             
             column.forEach((card, cardIndex) => {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `card ${!card.faceUp ? 'face-down' : 'face-up'}`;
+                cardDiv.draggable = card.faceUp;
                 
                 if (card.faceUp) {
                     cardDiv.innerHTML = `
                         <div class="card-rank">${card.rank}</div>
                         <div class="card-suit" style="color: ${card.getColor()}">${card.suit}</div>
                     `;
+                    cardDiv.ondragstart = (e) => this.handleDragStart(e, 'tableau', colIndex, cardIndex);
+                    cardDiv.style.cursor = 'grab';
+                    cardDiv.onmousedown = () => cardDiv.style.cursor = 'grabbing';
+                    cardDiv.onmouseup = () => cardDiv.style.cursor = 'grab';
                 } else {
                     cardDiv.textContent = '🂠';
+                    cardDiv.onclick = () => this.onCardClick(colIndex, cardIndex);
+                    cardDiv.style.cursor = 'pointer';
                 }
                 
-                cardDiv.onclick = () => this.onCardClick(colIndex, cardIndex);
                 colDiv.appendChild(cardDiv);
             });
             
@@ -238,10 +286,79 @@ class GameUI {
     }
     
     renderCardHTML(card) {
-        return `<div class="card-content">
+        return `<div class="card" style="pointer-events: auto;">
             <div class="card-rank">${card.rank}</div>
             <div class="card-suit" style="color: ${card.getColor()}">${card.suit}</div>
         </div>`;
+    }
+    
+    handleDragStart(e, sourceType, sourceIndex, cardIndex = -1) {
+        this.draggedData = { sourceType, sourceIndex, cardIndex };
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', e.target.innerHTML);
+    }
+    
+    handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+    
+    handleDropOnTableau(e, toCol) {
+        e.preventDefault();
+        if (!this.draggedData) return;
+        
+        const { sourceType, sourceIndex, cardIndex } = this.draggedData;
+        let success = false;
+        
+        if (sourceType === 'tableau' && sourceIndex !== toCol) {
+            success = this.game.moveInTableau(sourceIndex, toCol);
+        } else if (sourceType === 'foundation') {
+            success = this.game.moveFromFoundationToTableau(sourceIndex, toCol);
+        } else if (sourceType === 'waste') {
+            if (this.game.waste.length > 0) {
+                const card = this.game.waste[this.game.waste.length - 1];
+                const toPile = this.game.tableau[toCol];
+                const targetCard = toPile.length > 0 ? toPile[toPile.length - 1] : null;
+                if (this.game.canMoveInTableau(card, targetCard)) {
+                    toPile.push(this.game.waste.pop());
+                    success = true;
+                }
+            }
+        }
+        
+        if (success) {
+            this.render();
+        }
+        
+        this.draggedData = null;
+    }
+    
+    handleDropOnFoundation(e, toFoundation) {
+        e.preventDefault();
+        if (!this.draggedData) return;
+        
+        const { sourceType, sourceIndex } = this.draggedData;
+        let success = false;
+        
+        if (sourceType === 'tableau') {
+            success = this.game.moveToFoundation('tableau', sourceIndex);
+        } else if (sourceType === 'waste') {
+            success = this.game.moveToFoundation('waste', -1);
+        } else if (sourceType === 'foundation') {
+            // ファンデーション間の移動は許可しない
+            success = false;
+        }
+        
+        if (success) {
+            this.render();
+        }
+        
+        this.draggedData = null;
+    }
+    
+    handleDropOnStock(e) {
+        e.preventDefault();
+        this.draggedData = null;
     }
     
     onStockClick() {
@@ -258,7 +375,6 @@ class GameUI {
             return;
         }
         
-        // ファンデーションへ移動を試す
         if (this.game.moveToFoundation('tableau', colIndex)) {
             this.render();
             return;
@@ -266,7 +382,6 @@ class GameUI {
     }
 }
 
-// ゲーム開始
 window.addEventListener('DOMContentLoaded', () => {
     new GameUI();
 });
