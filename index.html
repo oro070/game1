@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solitaire Game</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Solitaire Game - ドラッグ & ドロップ版</title>
     <style>
         * {
             margin: 0;
@@ -87,10 +90,13 @@
 
         .foundation {
             border: 3px solid rgba(255, 215, 0, 0.5) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 8px;
         }
 
         .foundation:hover {
             border: 3px solid rgba(255, 215, 0, 1) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
         }
 
         .empty-foundation {
@@ -115,6 +121,17 @@
             flex-direction: column;
             gap: 5px;
             align-content: flex-start;
+            transition: all 0.2s;
+        }
+
+        .tableau-column:hover {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tableau-column.drag-over {
+            background: rgba(100, 200, 100, 0.3);
+            border-color: rgba(100, 200, 100, 0.8);
         }
 
         .card {
@@ -129,17 +146,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            cursor: grab;
             user-select: none;
             transition: all 0.2s;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
+        .card:active {
+            cursor: grabbing;
+            opacity: 0.8;
+        }
+
         .card.face-down {
             background: linear-gradient(135deg, #0066cc, #004499);
             color: white;
             font-size: 50px;
+            cursor: pointer;
         }
 
         .card.face-up {
@@ -151,14 +174,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
 
-        .card-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-        }
-
         .card-rank {
             font-size: 18px;
             font-weight: bold;
@@ -166,6 +181,11 @@
 
         .card-suit {
             font-size: 20px;
+        }
+
+        .drag-ghost {
+            opacity: 0.5;
+            transform: scale(0.95);
         }
 
         #reset-btn {
@@ -206,11 +226,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>ソリティア</h1>
-        <p class="instructions">ストックをクリックしてカードを引く。タブロー内やファンデーションにカードを移動させよう！</p>
+        <h1>🎴 ソリティア</h1>
+        <p class="instructions">💡 カードをドラッグして移動させます。ファンデーション（黄色い枠）にスートごとにA～Kまで積み上げてゲーム完了！</p>
         <div id="game-container"></div>
-        <button id="reset-btn" onclick="location.reload()">新しいゲーム</button>
+        <button id="reset-btn" onclick="location.reload()">🔄 新しいゲーム</button>
     </div>
-    <script src="solitaire.js"></script>
+    <script src="solitaire.js?v=2"></script>
 </body>
 </html>
