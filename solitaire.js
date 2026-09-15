@@ -97,17 +97,19 @@ class Solitaire {
                card.getValue() === targetCard.getValue() - 1;
     }
     
-    moveInTableau(fromCol, toCol) {
+    moveInTableau(fromCol, toCol, numCards = 1) {
         const fromPile = this.tableau[fromCol];
         const toPile = this.tableau[toCol];
         
-        if (fromPile.length === 0) return false;
+        if (fromPile.length < numCards) return false;
         
-        const sourceCard = fromPile[fromPile.length - 1];
+        const sourceCard = fromPile[fromPile.length - numCards];
         const targetCard = toPile.length > 0 ? toPile[toPile.length - 1] : null;
         
         if (this.canMoveInTableau(sourceCard, targetCard)) {
-            toPile.push(fromPile.pop());
+            const cardsToMove = fromPile.splice(fromPile.length - numCards, numCards);
+            toPile.push(...cardsToMove);
+            
             if (fromPile.length > 0 && !fromPile[fromPile.length - 1].faceUp) {
                 fromPile[fromPile.length - 1].faceUp = true;
             }
@@ -179,6 +181,28 @@ class GameUI {
     
     init() {
         this.render();
+    }
+    
+    // タビローの連続したカードが有効に移動可能かチェック
+    canMoveMultipleCards(column, startIndex) {
+        if (startIndex >= column.length) return false;
+        
+        // startIndexからcardIndexまでのカードが全てfaceUpで、色と値が正しく交互か確認
+        for (let i = startIndex; i < column.length; i++) {
+            if (!column[i].faceUp) return false;
+            
+            if (i > startIndex) {
+                const prevCard = column[i - 1];
+                const currentCard = column[i];
+                
+                // 色が異なり、値が1少なければOK
+                if (prevCard.getColor() === currentCard.getColor() || 
+                    prevCard.getValue() !== currentCard.getValue() + 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     render() {
@@ -309,7 +333,21 @@ class GameUI {
     }
     
     handleDragStart(e, sourceType, sourceIndex, cardIndex = -1) {
-        this.draggedData = { sourceType, sourceIndex, cardIndex };
+        let numCards = 1;
+        
+        // タビローから複数枚のカードをドラッグする場合
+        if (sourceType === 'tableau' && cardIndex !== -1) {
+            const column = this.game.tableau[sourceIndex];
+            // cardIndexからの有効なカード枚数を計算
+            numCards = column.length - cardIndex;
+            
+            // 複数枚が有効に移動可能かチェック
+            if (!this.canMoveMultipleCards(column, cardIndex)) {
+                numCards = 1; // 複数枚が無効なら1枚のみ
+            }
+        }
+        
+        this.draggedData = { sourceType, sourceIndex, cardIndex, numCards };
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/html', e.target.innerHTML);
     }
@@ -323,11 +361,11 @@ class GameUI {
         e.preventDefault();
         if (!this.draggedData) return;
         
-        const { sourceType, sourceIndex, cardIndex } = this.draggedData;
+        const { sourceType, sourceIndex, cardIndex, numCards } = this.draggedData;
         let success = false;
         
         if (sourceType === 'tableau' && sourceIndex !== toCol) {
-            success = this.game.moveInTableau(sourceIndex, toCol);
+            success = this.game.moveInTableau(sourceIndex, toCol, numCards);
         } else if (sourceType === 'foundation') {
             success = this.game.moveFromFoundationToTableau(sourceIndex, toCol);
         } else if (sourceType === 'waste') {
