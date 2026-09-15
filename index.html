@@ -56,8 +56,8 @@
         }
 
         .pile {
-            width: 100px;
-            height: 140px;
+            width: 80px;
+            height: 120px;
             background: rgba(255, 255, 255, 0.1);
             border: 3px dashed rgba(255, 255, 255, 0.5);
             border-radius: 8px;
@@ -84,7 +84,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 30px;
-            max-width: 500px;
+            max-width: 400px;
             margin-bottom: 20px;
         }
 
@@ -92,6 +92,11 @@
             border: 3px solid rgba(255, 215, 0, 0.5) !important;
             background: rgba(255, 255, 255, 0.1) !important;
             border-radius: 8px;
+            width: 80px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .foundation:hover {
@@ -135,22 +140,22 @@
         }
 
         .card {
-            width: 100%;
-            min-height: 120px;
-            aspect-ratio: auto;
-            max-width: 100px;
+            width: 80px;
+            height: 120px;
             background: white;
             border: 2px solid #333;
             border-radius: 6px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             cursor: grab;
             user-select: none;
             transition: all 0.2s;
             font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            padding: 6px;
+            position: relative;
         }
 
         .card:active {
@@ -163,6 +168,7 @@
             color: white;
             font-size: 50px;
             cursor: pointer;
+            justify-content: center;
         }
 
         .card.face-up {
@@ -171,16 +177,38 @@
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
         }
 
-        .card-rank {
-            font-size: 18px;
+        .card-top {
+            font-size: 14px;
             font-weight: bold;
+            text-align: center;
+            line-height: 1;
         }
 
-        .card-suit {
-            font-size: 20px;
+        .card-center {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .card-bottom {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            transform: rotate(180deg);
+            line-height: 1;
+        }
+
+        .card-rank-red {
+            color: #e60000;
+        }
+
+        .card-rank-black {
+            color: #000;
         }
 
         .drag-ghost {
@@ -231,6 +259,6 @@
         <div id="game-container"></div>
         <button id="reset-btn" onclick="location.reload()">🔄 新しいゲーム</button>
     </div>
-    <script src="solitaire.js?v=2"></script>
+    <script src="solitaire.js?v=3"></script>
 </body>
 </html>
