@@ -258,9 +258,17 @@ class GameUI {
                 cardDiv.draggable = card.faceUp;
                 
                 if (card.faceUp) {
+                    const colorClass = card.getColor() === 'red' ? 'card-rank-red' : 'card-rank-black';
                     cardDiv.innerHTML = `
-                        <div class="card-rank">${card.rank}</div>
-                        <div class="card-suit" style="color: ${card.getColor()}">${card.suit}</div>
+                        <div class="card-top ${colorClass}">
+                            <div>${card.rank}</div>
+                            <div>${card.suit}</div>
+                        </div>
+                        <div class="card-center">${card.suit}</div>
+                        <div class="card-bottom ${colorClass}">
+                            <div>${card.rank}</div>
+                            <div>${card.suit}</div>
+                        </div>
                     `;
                     cardDiv.ondragstart = (e) => this.handleDragStart(e, 'tableau', colIndex, cardIndex);
                     cardDiv.style.cursor = 'grab';
@@ -286,9 +294,17 @@ class GameUI {
     }
     
     renderCardHTML(card) {
+        const colorClass = card.getColor() === 'red' ? 'card-rank-red' : 'card-rank-black';
         return `<div class="card" style="pointer-events: auto;">
-            <div class="card-rank">${card.rank}</div>
-            <div class="card-suit" style="color: ${card.getColor()}">${card.suit}</div>
+            <div class="card-top ${colorClass}">
+                <div>${card.rank}</div>
+                <div>${card.suit}</div>
+            </div>
+            <div class="card-center">${card.suit}</div>
+            <div class="card-bottom ${colorClass}">
+                <div>${card.rank}</div>
+                <div>${card.suit}</div>
+            </div>
         </div>`;
     }
     
