@@ -129,10 +129,10 @@
             background: rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 0;
             align-content: flex-start;
             transition: all 0.2s;
-            overflow-y: auto;
+            overflow: visible;
         }
 
         .tableau-column:hover {
@@ -163,6 +163,11 @@
             padding: 4px;
             position: relative;
             flex-shrink: 0;
+            margin-top: -84px;
+        }
+
+        .card:first-child {
+            margin-top: 0;
         }
 
         .card:active {
@@ -176,6 +181,11 @@
             font-size: 40px;
             cursor: pointer;
             justify-content: center;
+            margin-top: -84px;
+        }
+
+        .card.face-down:first-child {
+            margin-top: 0;
         }
 
         .card.face-up {
