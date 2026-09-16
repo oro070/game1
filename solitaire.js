@@ -255,7 +255,6 @@ class GameUI {
         
         const foundationArea = document.createElement('div');
         foundationArea.className = 'foundation-area';
-        const suits = ['♠', '♥', '♦', '♣'];
         
         this.game.foundations.forEach((foundation, i) => {
             const div = document.createElement('div');
