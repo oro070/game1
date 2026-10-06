@@ -255,6 +255,7 @@ class GameUI {
         
         const foundationArea = document.createElement('div');
         foundationArea.className = 'foundation-area';
+        const suits = ['♠', '♥', '♦', '♣'];
         
         this.game.foundations.forEach((foundation, i) => {
             const div = document.createElement('div');
@@ -293,6 +294,14 @@ class GameUI {
                 const cardDiv = document.createElement('div');
                 cardDiv.className = `card ${!card.faceUp ? 'face-down' : 'face-up'}`;
                 cardDiv.draggable = card.faceUp;
+                
+                // カードの z-index と margin-top を設定（重ね表示用）
+                cardDiv.style.zIndex = String(100 - cardIndex);
+                if (cardIndex > 0) {
+                    cardDiv.style.marginTop = '-65px';
+                } else {
+                    cardDiv.style.marginTop = '0px';
+                }
                 
                 if (card.faceUp) {
                     const colorClass = card.getColor() === 'red' ? 'card-rank-red' : 'card-rank-black';
