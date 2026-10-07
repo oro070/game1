@@ -133,6 +133,7 @@
             align-content: flex-start;
             transition: all 0.2s;
             overflow: visible;
+            position: relative;
         }
 
         .tableau-column:hover {
@@ -163,7 +164,7 @@
             padding: 4px;
             position: relative;
             flex-shrink: 0;
-            margin-top: -65px;
+            margin-top: 0;
             z-index: 1;
         }
 
@@ -183,13 +184,8 @@
             font-size: 40px;
             cursor: pointer;
             justify-content: center;
-            margin-top: -65px;
             z-index: 1;
-        }
-
-        .card.face-down:first-child {
-            margin-top: 0;
-            z-index: 1;
+            position: relative;
         }
 
         .card.face-up {
@@ -282,6 +278,6 @@
         <div id="game-container"></div>
         <button id="reset-btn" onclick="location.reload()">🔄 新しいゲーム</button>
     </div>
-    <script src="solitaire.js?v=5"></script>
+    <script src="solitaire.js?v=6"></script>
 </body>
 </html>
