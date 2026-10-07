@@ -282,6 +282,8 @@ class GameUI {
             colDiv.id = `tableau-${colIndex}`;
             colDiv.ondragover = (e) => this.handleDragOver(e);
             colDiv.ondrop = (e) => this.handleDropOnTableau(e, colIndex);
+            colDiv.style.minHeight = '500px';
+            colDiv.style.height = '100%';
             
             column.forEach((card, cardIndex) => {
                 const cardDiv = document.createElement('div');
