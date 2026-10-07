@@ -101,17 +101,14 @@ class Solitaire {
         const column = this.tableau[fromCol];
         if (startCardIndex < 0 || startCardIndex >= column.length) return false;
         
-        // startCardIndex以降のカード全てがfaceUpか確認
         for (let i = startCardIndex; i < column.length; i++) {
             if (!column[i].faceUp) return false;
         }
         
-        // 色と値が正しく交互になっているか確認
         for (let i = startCardIndex + 1; i < column.length; i++) {
             const prevCard = column[i - 1];
             const currentCard = column[i];
             
-            // 色が異なり、値が1小さければOK
             if (prevCard.getColor() === currentCard.getColor() ||
                 currentCard.getValue() !== prevCard.getValue() - 1) {
                 return false;
@@ -129,25 +126,20 @@ class Solitaire {
             return false;
         }
         
-        // ドラッグしたカードの情報
         const sourceCard = fromPile[startCardIndex];
         const targetCard = toPile.length > 0 ? toPile[toPile.length - 1] : null;
         
-        // 移動可能かチェック
         if (!this.canMoveInTableau(sourceCard, targetCard)) {
             return false;
         }
         
-        // 複数枚を移動する場合、全てが有効に続いているか確認
         if (!this.canMoveMultipleCards(fromCol, startCardIndex)) {
             return false;
         }
         
-        // カードを移動
         const cardsToMove = fromPile.splice(startCardIndex);
         toPile.push(...cardsToMove);
         
-        // 移動元に裏向きカードがあれば、一番上のカードを表にする
         if (fromPile.length > 0 && !fromPile[fromPile.length - 1].faceUp) {
             fromPile[fromPile.length - 1].faceUp = true;
         }
@@ -221,6 +213,7 @@ class GameUI {
     
     render() {
         const container = document.getElementById('game-container');
+        if (!container) return;
         container.innerHTML = '';
         
         const topArea = document.createElement('div');
@@ -295,10 +288,9 @@ class GameUI {
                 cardDiv.className = `card ${!card.faceUp ? 'face-down' : 'face-up'}`;
                 cardDiv.draggable = card.faceUp;
                 
-                // カードの z-index と margin-top を設定（重ね表示用）
                 cardDiv.style.zIndex = String(100 - cardIndex);
                 if (cardIndex > 0) {
-                    cardDiv.style.marginTop = '-65px';
+                    cardDiv.style.marginTop = card.faceUp ? '-68px' : '-18px';
                 } else {
                     cardDiv.style.marginTop = '0px';
                 }
@@ -373,7 +365,6 @@ class GameUI {
         let success = false;
         
         if (sourceType === 'tableau' && sourceIndex !== toCol) {
-            // 複数枚ドラッグの場合、cardIndexから移動
             success = this.game.moveInTableau(sourceIndex, toCol, cardIndex);
         } else if (sourceType === 'foundation') {
             success = this.game.moveFromFoundationToTableau(sourceIndex, toCol);
