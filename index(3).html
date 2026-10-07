@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Solitaire Game - ドラッグ & ドロップ版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a3a1a, #2d5016);
+            min-height: 100vh;
+            padding: 10px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .instructions {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .top-area {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-start;
+        }
+
+        .pile {
+            width: 60px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.2s;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .pile:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pile.waste {
+            margin-left: 10px;
+        }
+
+        .foundation-area {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 300px;
+        }
+
+        .foundation {
+            border: 2px solid rgba(255, 215, 0, 0.5) !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border-radius: 6px;
+            width: 60px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .foundation:hover {
+            border: 2px solid rgba(255, 215, 0, 1) !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .empty-foundation {
+            font-size: 32px;
+            opacity: 0.5;
+        }
+
+        .tableau-area {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            flex: 1;
+        }
+
+        .tableau-column {
+            min-height: 0;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+            overflow: visible;
+            position: relative;
+            height: 100%;
+        }
+
+        .tableau-column:hover {
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tableau-column.drag-over {
+            background: rgba(100, 200, 100, 0.3);
+            border-color: rgba(100, 200, 100, 0.8);
+        }
+
+        .card {
+            width: 60px;
+            height: 90px;
+            background: white;
+            border: 1px solid #333;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            cursor: grab;
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+            padding: 4px;
+            flex-shrink: 0;
+            position: absolute;
+            left: 6px;
+        }
+
+        .card:active {
+            cursor: grabbing;
+            opacity: 0.8;
+        }
+
+        .card.face-down {
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            justify-content: center;
+        }
+
+        .card.face-up {
+            color: #333;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
+            z-index: 1000 !important;
+        }
+
+        .card-top {
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .card-center {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .card-bottom {
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            transform: rotate(180deg);
+            line-height: 1;
+        }
+
+        .card-rank-red {
+            color: #e60000;
+        }
+
+        .card-rank-black {
+            color: #000;
+        }
+
+        #reset-btn {
+            display: block;
+            margin: 5px auto 0;
+            padding: 8px 20px;
+            font-size: 14px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        #reset-btn:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        #reset-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .tableau-area {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎴 ソリティア</h1>
+        <p class="instructions">💡 カードをドラッグして移動させます。重ねたカードも一緒にドラッグできます。</p>
+        <div id="game-container"></div>
+        <button id="reset-btn" onclick="location.reload()">🔄 新しいゲーム</button>
+    </div>
+    <script src="solitaire.js?v=10"></script>
+</body>
+</html>
