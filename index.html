@@ -102,6 +102,7 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            position: relative;
         }
 
         .foundation:hover {
@@ -127,13 +128,10 @@
             border-radius: 6px;
             padding: 6px;
             background: rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            align-content: flex-start;
             transition: all 0.2s;
             overflow: visible;
             position: relative;
+            height: 100%;
         }
 
         .tableau-column:hover {
@@ -158,19 +156,12 @@
             justify-content: space-between;
             cursor: grab;
             user-select: none;
-            transition: all 0.2s;
             font-weight: bold;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
             padding: 4px;
-            position: relative;
             flex-shrink: 0;
-            margin-top: 0;
-            z-index: 1;
-        }
-
-        .card:first-child {
-            margin-top: 0;
-            z-index: 1;
+            position: absolute;
+            left: 6px;
         }
 
         .card:active {
@@ -184,8 +175,6 @@
             font-size: 40px;
             cursor: pointer;
             justify-content: center;
-            z-index: 1;
-            position: relative;
         }
 
         .card.face-up {
@@ -195,7 +184,7 @@
         .card:hover {
             transform: translateY(-3px);
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.7);
-            z-index: 100;
+            z-index: 1000 !important;
         }
 
         .card-top {
@@ -227,11 +216,6 @@
 
         .card-rank-black {
             color: #000;
-        }
-
-        .drag-ghost {
-            opacity: 0.5;
-            transform: scale(0.95);
         }
 
         #reset-btn {
@@ -278,6 +262,6 @@
         <div id="game-container"></div>
         <button id="reset-btn" onclick="location.reload()">🔄 新しいゲーム</button>
     </div>
-    <script src="solitaire.js?v=6"></script>
+    <script src="solitaire.js?v=10"></script>
 </body>
 </html>
