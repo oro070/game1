@@ -288,12 +288,10 @@ class GameUI {
                 cardDiv.className = `card ${!card.faceUp ? 'face-down' : 'face-up'}`;
                 cardDiv.draggable = card.faceUp;
                 
+                cardDiv.style.position = 'absolute';
+                cardDiv.style.left = '0';
+                cardDiv.style.top = `${cardIndex * 18}px`;
                 cardDiv.style.zIndex = String(100 - cardIndex);
-                if (cardIndex > 0) {
-                    cardDiv.style.marginTop = card.faceUp ? '-68px' : '-18px';
-                } else {
-                    cardDiv.style.marginTop = '0px';
-                }
                 
                 if (card.faceUp) {
                     const colorClass = card.getColor() === 'red' ? 'card-rank-red' : 'card-rank-black';
