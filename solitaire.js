@@ -305,6 +305,13 @@ class GameUI {
     init() {
         this.render();
     }
+
+    // start a brand new game (reset state)
+    newGame() {
+        this.game = new Solitaire();
+        this.draggedData = null;
+        this.render();
+    }
     
     render() {
         const container = document.getElementById('game-container');
@@ -313,16 +320,17 @@ class GameUI {
         
         const topArea = document.createElement('div');
         topArea.className = 'top-area';
+        topArea.style.display = 'flex';
+        topArea.style.justifyContent = 'space-between';
+        topArea.style.alignItems = 'center';
+        topArea.style.marginBottom = '8px';
 
-        // Undo button
-        const undoBtn = document.createElement('button');
-        undoBtn.textContent = '戻す';
-        undoBtn.title = '一手戻す';
-        undoBtn.onclick = () => {
-            if (this.game.undo()) this.render();
-        };
-        topArea.appendChild(undoBtn);
-        
+        // left side (stock + waste)
+        const leftArea = document.createElement('div');
+        leftArea.style.display = 'flex';
+        leftArea.style.gap = '8px';
+        leftArea.style.alignItems = 'center';
+
         const stockDiv = document.createElement('div');
         stockDiv.className = 'pile stock';
         stockDiv.id = 'stock';
@@ -330,7 +338,7 @@ class GameUI {
         stockDiv.onclick = () => this.onStockClick();
         stockDiv.ondragover = (e) => this.handleDragOver(e);
         stockDiv.ondrop = (e) => this.handleDropOnStock(e);
-        topArea.appendChild(stockDiv);
+        leftArea.appendChild(stockDiv);
         
         const wasteDiv = document.createElement('div');
         wasteDiv.className = 'pile waste';
@@ -346,7 +354,37 @@ class GameUI {
         } else {
             wasteDiv.textContent = '空';
         }
-        topArea.appendChild(wasteDiv);
+        leftArea.appendChild(wasteDiv);
+
+        topArea.appendChild(leftArea);
+
+        // right side (buttons)
+        const rightArea = document.createElement('div');
+        rightArea.style.display = 'flex';
+        rightArea.style.gap = '8px';
+        rightArea.style.alignItems = 'center';
+
+        // Undo button
+        const undoBtn = document.createElement('button');
+        undoBtn.textContent = '戻す';
+        undoBtn.title = '一手戻す';
+        undoBtn.onclick = () => {
+            if (this.game.undo()) this.render();
+        };
+        rightArea.appendChild(undoBtn);
+
+        // New game button
+        const newGameBtn = document.createElement('button');
+        newGameBtn.textContent = '新しいゲーム';
+        newGameBtn.title = '新しいゲームを開始';
+        newGameBtn.onclick = () => {
+            if (confirm('新しいゲームを開始しますか？ 現在の進行は失われます。')) {
+                this.newGame();
+            }
+        };
+        rightArea.appendChild(newGameBtn);
+
+        topArea.appendChild(rightArea);
         
         container.appendChild(topArea);
         
