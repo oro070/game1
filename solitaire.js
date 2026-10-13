@@ -46,13 +46,19 @@ class Deck {
 }
 
 class Solitaire {
-    constructor() {
+    constructor(historyLimit = 50) {
         this.deck = new Deck();
         this.stock = [];
         this.waste = [];
         this.foundations = [[], [], [], []];
         this.tableau = [[], [], [], [], [], [], []];
+
+        // undo history: stores previous states (plain objects)
+        this.history = [];
+        this.historyLimit = historyLimit;
+
         this.initialize();
+        // Initial state is effectively the state before any player action, so don't push an extra snapshot here.
     }
     
     initialize() {
@@ -66,15 +72,68 @@ class Solitaire {
         
         this.stock = this.deck.cards;
     }
+
+    // Serialize current game state into a plain object (for history)
+    _serializeState() {
+        const serializeCard = (c) => ({ suit: c.suit, rank: c.rank, faceUp: c.faceUp });
+        return {
+            stock: this.stock.map(serializeCard),
+            waste: this.waste.map(serializeCard),
+            foundations: this.foundations.map(f => f.map(serializeCard)),
+            tableau: this.tableau.map(col => col.map(serializeCard))
+        };
+    }
+
+    // Restore a state object (from history)
+    _restoreState(state) {
+        const buildCard = (o) => {
+            const c = new Card(o.suit, o.rank);
+            c.faceUp = !!o.faceUp;
+            return c;
+        };
+
+        this.stock = state.stock.map(buildCard);
+        this.waste = state.waste.map(buildCard);
+        this.foundations = state.foundations.map(col => col.map(buildCard));
+        this.tableau = state.tableau.map(col => col.map(buildCard));
+
+        // keep deck.cards in sync with stock (so drawFromStock still works as expected if some code relies on deck)
+        this.deck.cards = this.stock;
+    }
+
+    // push a previous snapshot onto history (called BEFORE performing a change)
+    _pushSnapshot(snapshot) {
+        this.history.push(snapshot);
+        if (this.history.length > this.historyLimit) {
+            this.history.shift();
+        }
+    }
+
+    // public undo: restore the last snapshot. Returns true if undo succeeded.
+    undo() {
+        if (this.history.length === 0) return false;
+        const prev = this.history.pop();
+        this._restoreState(prev);
+        return true;
+    }
     
     drawFromStock() {
+        // always change state, so snapshot before changing
+        const snapshot = this._serializeState();
+
         if (this.stock.length === 0) {
-            this.stock = this.waste.reverse();
+            // reverse without mutating the original snapshot arrays
+            this.stock = this.waste.slice().reverse();
             this.waste = [];
+            this.deck.cards = this.stock;
+            // record snapshot (previous state) so undo can revert
+            this._pushSnapshot(snapshot);
         } else {
             const card = this.stock.pop();
             card.faceUp = true;
             this.waste.push(card);
+            this.deck.cards = this.stock;
+            this._pushSnapshot(snapshot);
         }
     }
     
@@ -119,6 +178,9 @@ class Solitaire {
     }
     
     moveInTableau(fromCol, toCol, startCardIndex) {
+        // snapshot previous state; push only if move succeeds
+        const snapshot = this._serializeState();
+
         const fromPile = this.tableau[fromCol];
         const toPile = this.tableau[toCol];
         
@@ -143,11 +205,28 @@ class Solitaire {
         if (fromPile.length > 0 && !fromPile[fromPile.length - 1].faceUp) {
             fromPile[fromPile.length - 1].faceUp = true;
         }
-        
+
+        // record previous snapshot for undo
+        this._pushSnapshot(snapshot);
         return true;
     }
     
+    // Move the top card (waste) to tableau if legal. Used by UI to avoid modifying arrays directly.
+    moveWasteToTableau(toCol) {
+        if (this.waste.length === 0) return false;
+        const card = this.waste[this.waste.length - 1];
+        const toPile = this.tableau[toCol];
+        const targetCard = toPile.length > 0 ? toPile[toPile.length - 1] : null;
+        if (!this.canMoveInTableau(card, targetCard)) return false;
+
+        const snapshot = this._serializeState();
+        toPile.push(this.waste.pop());
+        this._pushSnapshot(snapshot);
+        return true;
+    }
+
     moveToFoundation(fromType, fromIndex) {
+        const snapshot = this._serializeState();
         let card = null;
         
         if (fromType === 'waste' && this.waste.length > 0) {
@@ -173,6 +252,7 @@ class Solitaire {
                     this.foundations[fromIndex].pop();
                 }
                 this.foundations[i].push(card);
+                this._pushSnapshot(snapshot);
                 return true;
             }
         }
@@ -180,6 +260,8 @@ class Solitaire {
     }
     
     moveFromFoundationToTableau(foundationIndex, tableauIndex) {
+        const snapshot = this._serializeState();
+
         const foundation = this.foundations[foundationIndex];
         const tableau = this.tableau[tableauIndex];
         
@@ -190,9 +272,22 @@ class Solitaire {
         
         if (this.canMoveFromFoundation(card, targetCard) || (!targetCard && card.rank === 'K')) {
             tableau.push(foundation.pop());
+            this._pushSnapshot(snapshot);
             return true;
         }
         return false;
+    }
+
+    // flip a facedown card in tableau (used by UI on click) — undoable
+    flipTableauCard(colIndex, cardIndex) {
+        const column = this.tableau[colIndex];
+        if (!column || cardIndex < 0 || cardIndex >= column.length) return false;
+        const card = column[cardIndex];
+        if (card.faceUp) return false;
+        const snapshot = this._serializeState();
+        card.faceUp = true;
+        this._pushSnapshot(snapshot);
+        return true;
     }
     
     isWon() {
@@ -218,6 +313,15 @@ class GameUI {
         
         const topArea = document.createElement('div');
         topArea.className = 'top-area';
+
+        // Undo button
+        const undoBtn = document.createElement('button');
+        undoBtn.textContent = '戻す';
+        undoBtn.title = '一手戻す';
+        undoBtn.onclick = () => {
+            if (this.game.undo()) this.render();
+        };
+        topArea.appendChild(undoBtn);
         
         const stockDiv = document.createElement('div');
         stockDiv.className = 'pile stock';
@@ -369,15 +473,8 @@ class GameUI {
         } else if (sourceType === 'foundation') {
             success = this.game.moveFromFoundationToTableau(sourceIndex, toCol);
         } else if (sourceType === 'waste') {
-            if (this.game.waste.length > 0) {
-                const card = this.game.waste[this.game.waste.length - 1];
-                const toPile = this.game.tableau[toCol];
-                const targetCard = toPile.length > 0 ? toPile[toPile.length - 1] : null;
-                if (this.game.canMoveInTableau(card, targetCard)) {
-                    toPile.push(this.game.waste.pop());
-                    success = true;
-                }
-            }
+            // use the new game.moveWasteToTableau method which records history
+            success = this.game.moveWasteToTableau(toCol);
         }
         
         if (success) {
@@ -423,8 +520,8 @@ class GameUI {
         const card = this.game.tableau[colIndex][cardIndex];
         
         if (!card.faceUp) {
-            card.faceUp = true;
-            this.render();
+            // use game.flipTableauCard so the action is undoable
+            if (this.game.flipTableauCard(colIndex, cardIndex)) this.render();
             return;
         }
         
