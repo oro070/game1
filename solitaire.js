@@ -366,7 +366,7 @@ class GameUI {
 
         // Undo button
         const undoBtn = document.createElement('button');
-        undoBtn.textContent = '戻す';
+        undoBtn.textContent = '一手戻す';
         undoBtn.title = '一手戻す';
         undoBtn.onclick = () => {
             if (this.game.undo()) this.render();
