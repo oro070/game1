@@ -17,6 +17,7 @@
     justify-content: center;
     cursor: pointer;
     font-weight: bold;
+    position: absolute;
 }
 
 .card.face-down {
