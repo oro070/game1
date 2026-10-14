@@ -434,8 +434,8 @@ class GameUI {
                 
                 cardDiv.style.position = 'absolute';
                 cardDiv.style.left = '0';
-                cardDiv.style.top = `${cardIndex * 18}px`;
-                cardDiv.style.zIndex = String(100 - cardIndex);
+                cardDiv.style.top = `${cardIndex * 25}px`;
+                cardDiv.style.zIndex = String(100 + cardIndex);
                 
                 if (card.faceUp) {
                     const colorClass = card.getColor() === 'red' ? 'card-rank-red' : 'card-rank-black';
