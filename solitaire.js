@@ -314,24 +314,27 @@ class GameUI {
                 min-height: 100%;
                 height: 100%;
                 font-size: 18px;
-                background: #edf5ff;
+                background: #1f4b2a;
             }
 
             body {
                 display: flex;
                 align-items: flex-start;
                 justify-content: center;
-                padding: 24px 16px 40px;
+                padding: 20px 16px 40px;
                 box-sizing: border-box;
             }
 
             #game-container {
-                width: fit-content;
-                min-width: 0;
+                width: min(95vw, 1100px);
                 margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
 
             .top-area {
+                width: min(92vw, 1000px);
                 font-size: 18px;
                 margin-bottom: 12px;
             }
@@ -355,7 +358,9 @@ class GameUI {
 
             .foundation-area,
             .tableau-area {
+                width: min(92vw, 1000px);
                 gap: 14px;
+                justify-content: center;
             }
 
             .tableau-column {
@@ -449,8 +454,7 @@ class GameUI {
         topArea.style.justifyContent = 'space-between';
         topArea.style.alignItems = 'center';
         topArea.style.marginBottom = '8px';
-        topArea.style.width = '100%';
-        topArea.style.maxWidth = '920px';
+        topArea.style.width = 'min(92vw, 1000px)';
 
         // left side (stock + waste)
         const leftArea = document.createElement('div');
@@ -520,8 +524,7 @@ class GameUI {
         foundationArea.style.display = 'flex';
         foundationArea.style.gap = '14px';
         foundationArea.style.justifyContent = 'center';
-        foundationArea.style.width = '100%';
-        foundationArea.style.maxWidth = '920px';
+        foundationArea.style.width = 'min(92vw, 1000px)';
         const suits = ['♠', '♥', '♦', '♣'];
         
         this.game.foundations.forEach((foundation, i) => {
@@ -552,8 +555,7 @@ class GameUI {
         tableauArea.style.display = 'flex';
         tableauArea.style.gap = '14px';
         tableauArea.style.justifyContent = 'center';
-        tableauArea.style.width = '100%';
-        tableauArea.style.maxWidth = '920px';
+        tableauArea.style.width = 'min(92vw, 1000px)';
         
         this.game.tableau.forEach((column, colIndex) => {
             const colDiv = document.createElement('div');
@@ -648,7 +650,6 @@ class GameUI {
         } else if (sourceType === 'foundation') {
             success = this.game.moveFromFoundationToTableau(sourceIndex, toCol);
         } else if (sourceType === 'waste') {
-            // use the new game.moveWasteToTableau method which records history
             success = this.game.moveWasteToTableau(toCol);
         }
         
@@ -695,7 +696,6 @@ class GameUI {
         const card = this.game.tableau[colIndex][cardIndex];
         
         if (!card.faceUp) {
-            // use game.flipTableauCard so the action is undoable
             if (this.game.flipTableauCard(colIndex, cardIndex)) this.render();
             return;
         }
