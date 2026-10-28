@@ -583,7 +583,7 @@ class GameUI {
                             <div>${card.rank}</div>
                             <div>${card.suit}</div>
                         </div>
-                        <div class="card-center">${card.suit}</div>
+                        <div class="card-center ${colorClass}">${card.suit}</div>
                         <div class="card-bottom ${colorClass}">
                             <div>${card.rank}</div>
                             <div>${card.suit}</div>
@@ -619,7 +619,7 @@ class GameUI {
                 <div>${card.rank}</div>
                 <div>${card.suit}</div>
             </div>
-            <div class="card-center">${card.suit}</div>
+            <div class="card-center ${colorClass}">${card.suit}</div>
             <div class="card-bottom ${colorClass}">
                 <div>${card.rank}</div>
                 <div>${card.suit}</div>
