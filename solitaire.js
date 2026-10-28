@@ -309,8 +309,26 @@ class GameUI {
         const style = document.createElement('style');
         style.id = 'large-solitaire-styles';
         style.textContent = `
-            body {
+            html, body {
+                margin: 0;
+                min-height: 100%;
+                height: 100%;
                 font-size: 18px;
+                background: #edf5ff;
+            }
+
+            body {
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                padding: 24px 16px 40px;
+                box-sizing: border-box;
+            }
+
+            #game-container {
+                width: fit-content;
+                min-width: 0;
+                margin: 0 auto;
             }
 
             .top-area {
@@ -420,6 +438,10 @@ class GameUI {
         const container = document.getElementById('game-container');
         if (!container) return;
         container.innerHTML = '';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.alignItems = 'center';
+        container.style.margin = '0 auto';
         
         const topArea = document.createElement('div');
         topArea.className = 'top-area';
@@ -427,6 +449,8 @@ class GameUI {
         topArea.style.justifyContent = 'space-between';
         topArea.style.alignItems = 'center';
         topArea.style.marginBottom = '8px';
+        topArea.style.width = '100%';
+        topArea.style.maxWidth = '920px';
 
         // left side (stock + waste)
         const leftArea = document.createElement('div');
@@ -495,6 +519,9 @@ class GameUI {
         foundationArea.className = 'foundation-area';
         foundationArea.style.display = 'flex';
         foundationArea.style.gap = '14px';
+        foundationArea.style.justifyContent = 'center';
+        foundationArea.style.width = '100%';
+        foundationArea.style.maxWidth = '920px';
         const suits = ['♠', '♥', '♦', '♣'];
         
         this.game.foundations.forEach((foundation, i) => {
@@ -524,6 +551,9 @@ class GameUI {
         tableauArea.className = 'tableau-area';
         tableauArea.style.display = 'flex';
         tableauArea.style.gap = '14px';
+        tableauArea.style.justifyContent = 'center';
+        tableauArea.style.width = '100%';
+        tableauArea.style.maxWidth = '920px';
         
         this.game.tableau.forEach((column, colIndex) => {
             const colDiv = document.createElement('div');
