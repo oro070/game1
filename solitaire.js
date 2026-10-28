@@ -299,9 +299,112 @@ class GameUI {
     constructor() {
         this.game = new Solitaire();
         this.draggedData = null;
+        this.injectLargeCardStyles();
         this.init();
     }
     
+    injectLargeCardStyles() {
+        if (document.getElementById('large-solitaire-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'large-solitaire-styles';
+        style.textContent = `
+            body {
+                font-size: 18px;
+            }
+
+            .top-area {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+
+            button {
+                font-size: 18px;
+                padding: 8px 14px;
+                min-width: 120px;
+            }
+
+            .pile {
+                width: 110px;
+                height: 150px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 12px;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            .foundation-area,
+            .tableau-area {
+                gap: 14px;
+            }
+
+            .tableau-column {
+                position: relative;
+                width: 110px;
+                min-width: 110px;
+                min-height: 500px;
+                height: 100%;
+            }
+
+            .card {
+                width: 100px;
+                height: 140px;
+                border-radius: 12px;
+                border: 2px solid #333;
+                background: white;
+                color: #111;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: 8px 10px;
+                box-sizing: border-box;
+                font-size: 18px;
+                line-height: 1.1;
+                user-select: none;
+            }
+
+            .card-top,
+            .card-bottom {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 1.1em;
+                font-weight: 700;
+            }
+
+            .card-center {
+                font-size: 2.4em;
+                text-align: center;
+                line-height: 1;
+            }
+
+            .card-rank-red {
+                color: #d11a2a;
+            }
+
+            .card-rank-black {
+                color: #171717;
+            }
+
+            .empty-foundation {
+                font-size: 42px;
+                opacity: 0.6;
+            }
+
+            .face-down {
+                font-size: 24px;
+                background: linear-gradient(135deg, #2f6ae6, #1247b7);
+                color: white;
+                border-color: #0d3a8f;
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
     init() {
         this.render();
     }
@@ -328,7 +431,7 @@ class GameUI {
         // left side (stock + waste)
         const leftArea = document.createElement('div');
         leftArea.style.display = 'flex';
-        leftArea.style.gap = '8px';
+        leftArea.style.gap = '12px';
         leftArea.style.alignItems = 'center';
 
         const stockDiv = document.createElement('div');
@@ -390,6 +493,8 @@ class GameUI {
         
         const foundationArea = document.createElement('div');
         foundationArea.className = 'foundation-area';
+        foundationArea.style.display = 'flex';
+        foundationArea.style.gap = '14px';
         const suits = ['♠', '♥', '♦', '♣'];
         
         this.game.foundations.forEach((foundation, i) => {
@@ -417,6 +522,8 @@ class GameUI {
         
         const tableauArea = document.createElement('div');
         tableauArea.className = 'tableau-area';
+        tableauArea.style.display = 'flex';
+        tableauArea.style.gap = '14px';
         
         this.game.tableau.forEach((column, colIndex) => {
             const colDiv = document.createElement('div');
@@ -434,7 +541,7 @@ class GameUI {
                 
                 cardDiv.style.position = 'absolute';
                 cardDiv.style.left = '0';
-                cardDiv.style.top = `${cardIndex * 25}px`;
+                cardDiv.style.top = `${cardIndex * 28}px`;
                 cardDiv.style.zIndex = String(100 + cardIndex);
                 
                 if (card.faceUp) {
