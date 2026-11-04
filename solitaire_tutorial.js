@@ -55,6 +55,7 @@ class Solitaire {
         this.foundations = [[], [], [], []];
         this.tableau = [[], [], [], [], [], [], []];
 
+        // undo history: stores previous states (plain objects)
         this.history = [];
         this.historyLimit = historyLimit;
 
@@ -350,7 +351,6 @@ class Solitaire {
         return this.foundations.every(f => f.length === 13);
     }
 }
-
 class GameUI {
     constructor() {
         this.game = new Solitaire();
@@ -477,6 +477,7 @@ class GameUI {
             }
 
             .face-down {
+                font-size: 24px;
                 background: linear-gradient(135deg, #2f6ae6, #1247b7);
                 color: white;
                 border-color: #0d3a8f;
@@ -695,8 +696,7 @@ class GameUI {
 
         this.renderTutorialStep();
     }
-
-    tutorialCard(rank, suit, draggable = true) {
+        tutorialCard(rank, suit, draggable = true) {
         const red = suit === '♥' || suit === '♦';
 
         return `<div class="tutorial-card ${red ? 'red' : ''}"
@@ -715,8 +715,8 @@ class GameUI {
 
         const steps = [
             {
-                title: 'STEP 1：赤と黒を交互に重ねる',
-                lead: '赤いカードと黒いカードを交互に並べます。今回は「6♥」を「7♠」の上にドラッグしてください。',
+                title: 'STEP 1：数字を小さくしながら赤と黒を交互に重ねる',
+                lead: '場札では、数字が1つずつ小さくなるように、赤と黒のカードを交互に重ねます。例えば、黒い7の上には赤い6、その上には黒い5を置けます。今回は「6♥」を「7♠」の上にドラッグしてください。',
                 board: `
                     <div class="tutorial-slot"
                          data-tutorial-target="tableau">
@@ -729,7 +729,7 @@ class GameUI {
                         <small>動かすカード：6♥</small>
                     </div>
                 `,
-                hint: 'ヒント：赤い6は、黒い7の上に置けます。'
+                hint: 'ヒント：置くカードは、下のカードより数字が1つ小さく、色も赤・黒で交互になる必要があります。K、Q、J、10、9……の順に小さくなります。'
             },
             {
                 title: 'STEP 2：組札にAを置く',
@@ -980,8 +980,7 @@ class GameUI {
             container.style.display = 'flex';
         }
     }
-
-    init() {
+        init() {
         this.render();
     }
 
@@ -1050,7 +1049,6 @@ class GameUI {
                     this.handleDragStart(e, 'waste', -1);
                 };
             }
-
         } else {
             wasteDiv.textContent = '空';
         }
@@ -1130,7 +1128,6 @@ class GameUI {
                         this.handleDragStart(e, 'foundation', i);
                     };
                 }
-
             } else {
                 div.innerHTML = `
                     <div class="empty-foundation">${suits[i]}</div>
@@ -1218,7 +1215,6 @@ class GameUI {
                     cardDiv.onmouseup = () => {
                         cardDiv.style.cursor = 'grab';
                     };
-
                 } else {
                     cardDiv.textContent = '🂠';
 
