@@ -716,7 +716,7 @@ class GameUI {
         const steps = [
             {
                 title: 'STEP 1：赤と黒を交互に重ねる',
-                lead: '赤いカードと黒いカードを交互に並べます。今回は「6♥」を「7♠」の上にドラッグしてください。',
+                lead: '赤いカードと黒いカードを交互に数字が小さくなるように並べます。今回は「6♥」を「7♠」の上にドラッグしてください。',
                 board: `
                     <div class="tutorial-slot"
                          data-tutorial-target="tableau">
