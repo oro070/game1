@@ -55,7 +55,6 @@ class Solitaire {
         this.foundations = [[], [], [], []];
         this.tableau = [[], [], [], [], [], [], []];
 
-        // undo history: stores previous states (plain objects)
         this.history = [];
         this.historyLimit = historyLimit;
 
@@ -106,6 +105,7 @@ class Solitaire {
 
     _pushSnapshot(snapshot) {
         this.history.push(snapshot);
+
         if (this.history.length > this.historyLimit) {
             this.history.shift();
         }
@@ -113,8 +113,10 @@ class Solitaire {
 
     undo() {
         if (this.history.length === 0) return false;
+
         const prev = this.history.pop();
         this._restoreState(prev);
+
         return true;
     }
 
@@ -137,27 +139,35 @@ class Solitaire {
 
     canMoveInTableau(sourceCard, targetCard) {
         if (!targetCard) return sourceCard.rank === 'K';
+
         return sourceCard.getColor() !== targetCard.getColor() &&
                sourceCard.getValue() === targetCard.getValue() - 1;
     }
 
     canMoveToFoundation(card, foundationIndex) {
         const foundation = this.foundations[foundationIndex];
+
         if (foundation.length === 0) return card.rank === 'A';
+
         const topCard = foundation[foundation.length - 1];
+
         return card.suit === topCard.suit &&
                card.getValue() === topCard.getValue() + 1;
     }
 
     canMoveFromFoundation(card, targetCard) {
         if (!targetCard) return false;
+
         return card.getColor() !== targetCard.getColor() &&
                card.getValue() === targetCard.getValue() - 1;
     }
 
     canMoveMultipleCards(fromCol, startCardIndex) {
         const column = this.tableau[fromCol];
-        if (startCardIndex < 0 || startCardIndex >= column.length) return false;
+
+        if (startCardIndex < 0 || startCardIndex >= column.length) {
+            return false;
+        }
 
         for (let i = startCardIndex; i < column.length; i++) {
             if (!column[i].faceUp) return false;
@@ -189,6 +199,7 @@ class Solitaire {
         }
 
         const sourceCard = fromPile[startCardIndex];
+
         const targetCard = toPile.length > 0
             ? toPile[toPile.length - 1]
             : null;
@@ -210,6 +221,7 @@ class Solitaire {
         }
 
         this._pushSnapshot(snapshot);
+
         return true;
     }
 
@@ -218,6 +230,7 @@ class Solitaire {
 
         const card = this.waste[this.waste.length - 1];
         const toPile = this.tableau[toCol];
+
         const targetCard = toPile.length > 0
             ? toPile[toPile.length - 1]
             : null;
@@ -225,8 +238,10 @@ class Solitaire {
         if (!this.canMoveInTableau(card, targetCard)) return false;
 
         const snapshot = this._serializeState();
+
         toPile.push(this.waste.pop());
         this._pushSnapshot(snapshot);
+
         return true;
     }
 
@@ -236,11 +251,13 @@ class Solitaire {
 
         if (fromType === 'waste' && this.waste.length > 0) {
             card = this.waste[this.waste.length - 1];
+
         } else if (fromType === 'tableau' &&
                    this.tableau[fromIndex].length > 0) {
             card = this.tableau[fromIndex][
                 this.tableau[fromIndex].length - 1
             ];
+
         } else if (fromType === 'foundation' &&
                    this.foundations[fromIndex].length > 0) {
             card = this.foundations[fromIndex][
@@ -252,8 +269,10 @@ class Solitaire {
 
         for (let i = 0; i < 4; i++) {
             if (this.canMoveToFoundation(card, i)) {
+
                 if (fromType === 'waste') {
                     this.waste.pop();
+
                 } else if (fromType === 'tableau') {
                     this.tableau[fromIndex].pop();
 
@@ -265,12 +284,14 @@ class Solitaire {
                             this.tableau[fromIndex].length - 1
                         ].faceUp = true;
                     }
+
                 } else if (fromType === 'foundation') {
                     this.foundations[fromIndex].pop();
                 }
 
                 this.foundations[i].push(card);
                 this._pushSnapshot(snapshot);
+
                 return true;
             }
         }
@@ -287,14 +308,17 @@ class Solitaire {
         if (foundation.length === 0) return false;
 
         const card = foundation[foundation.length - 1];
+
         const targetCard = tableau.length > 0
             ? tableau[tableau.length - 1]
             : null;
 
         if (this.canMoveFromFoundation(card, targetCard) ||
             (!targetCard && card.rank === 'K')) {
+
             tableau.push(foundation.pop());
             this._pushSnapshot(snapshot);
+
             return true;
         }
 
@@ -311,11 +335,14 @@ class Solitaire {
         }
 
         const card = column[cardIndex];
+
         if (card.faceUp) return false;
 
         const snapshot = this._serializeState();
+
         card.faceUp = true;
         this._pushSnapshot(snapshot);
+
         return true;
     }
 
@@ -323,10 +350,12 @@ class Solitaire {
         return this.foundations.every(f => f.length === 13);
     }
 }
+
 class GameUI {
     constructor() {
         this.game = new Solitaire();
         this.draggedData = null;
+
         this.injectLargeCardStyles();
         this.init();
         this.createTutorial();
@@ -337,6 +366,7 @@ class GameUI {
 
         const style = document.createElement('style');
         style.id = 'large-solitaire-styles';
+
         style.textContent = `
             html, body {
                 margin: 0;
@@ -447,7 +477,6 @@ class GameUI {
             }
 
             .face-down {
-                font-size: 24px;
                 background: linear-gradient(135deg, #2f6ae6, #1247b7);
                 color: white;
                 border-color: #0d3a8f;
@@ -460,6 +489,7 @@ class GameUI {
     createTutorial() {
         const style = document.createElement('style');
         style.id = 'solitaire-tutorial-styles';
+
         style.textContent = `
             #solitaire-tutorial {
                 position: fixed;
@@ -657,12 +687,16 @@ class GameUI {
 
         this.tutorialStep = 0;
         this.tutorialDone = false;
+
         this.tutorialRoot = document.createElement('div');
         this.tutorialRoot.id = 'solitaire-tutorial';
+
         document.body.appendChild(this.tutorialRoot);
+
         this.renderTutorialStep();
     }
-      tutorialCard(rank, suit, draggable = true) {
+
+    tutorialCard(rank, suit, draggable = true) {
         const red = suit === '♥' || suit === '♦';
 
         return `<div class="tutorial-card ${red ? 'red' : ''}"
@@ -724,7 +758,7 @@ class GameUI {
                             data-tutorial-stock="true">
                         📦<br>山札<br><small>クリック</small>
                     </button>
-                    <div class="tutorial-slot">
+                    <div class="tutorial-slot" data-tutorial-waste="true">
                         <div style="align-self:center;color:#e5eee7;font-size:13px">
                             めくったカードが<br>ここに出ます
                         </div>
@@ -808,6 +842,7 @@ class GameUI {
                     'text/plain',
                     source.dataset.tutorialCard
                 );
+
                 e.dataTransfer.effectAllowed = 'move';
             });
         }
@@ -815,6 +850,7 @@ class GameUI {
         this.tutorialRoot.querySelectorAll(
             '[data-tutorial-target]'
         ).forEach(target => {
+
             target.addEventListener('dragover', e => {
                 e.preventDefault();
                 target.classList.add('over');
@@ -856,6 +892,7 @@ class GameUI {
                     ) + '<small>移動できました！</small>';
 
                     this.completeTutorialStep();
+
                 } else {
                     this.showTutorialFeedback(
                         'その場所には置けません。説明とヒントを確認してみましょう。'
@@ -870,9 +907,19 @@ class GameUI {
 
         if (stock) {
             stock.onclick = () => {
-                stock.textContent = '♥  9';
-                stock.style.background = '#fff';
-                stock.style.color = '#d21d32';
+
+                // 山札はそのまま残し、引いたカードを右側のめくり札に表示する
+                const waste = this.tutorialRoot.querySelector(
+                    '[data-tutorial-waste]'
+                );
+
+                if (waste) {
+                    waste.innerHTML = this.tutorialCard('9', '♥', false) +
+                        '<small>めくり札</small>';
+                }
+
+                stock.disabled = true;
+
                 this.completeTutorialStep();
             };
         }
@@ -943,8 +990,10 @@ class GameUI {
         this.draggedData = null;
         this.render();
     }
-      render() {
+
+    render() {
         const container = document.getElementById('game-container');
+
         if (!container) return;
 
         container.innerHTML = '';
@@ -970,6 +1019,7 @@ class GameUI {
         const stockDiv = document.createElement('div');
         stockDiv.className = 'pile stock';
         stockDiv.id = 'stock';
+
         stockDiv.textContent = this.game.stock.length > 0
             ? `📦 ${this.game.stock.length}`
             : '空';
@@ -995,10 +1045,12 @@ class GameUI {
 
             if (cardElement) {
                 cardElement.draggable = true;
+
                 cardElement.ondragstart = (e) => {
                     this.handleDragStart(e, 'waste', -1);
                 };
             }
+
         } else {
             wasteDiv.textContent = '空';
         }
@@ -1059,6 +1111,7 @@ class GameUI {
             div.id = `foundation-${i}`;
 
             div.ondragover = (e) => this.handleDragOver(e);
+
             div.ondrop = (e) => {
                 this.handleDropOnFoundation(e, i);
             };
@@ -1072,10 +1125,12 @@ class GameUI {
 
                 if (cardElement) {
                     cardElement.draggable = true;
+
                     cardElement.ondragstart = (e) => {
                         this.handleDragStart(e, 'foundation', i);
                     };
                 }
+
             } else {
                 div.innerHTML = `
                     <div class="empty-foundation">${suits[i]}</div>
@@ -1102,6 +1157,7 @@ class GameUI {
             colDiv.id = `tableau-${colIndex}`;
 
             colDiv.ondragover = (e) => this.handleDragOver(e);
+
             colDiv.ondrop = (e) => {
                 this.handleDropOnTableau(e, colIndex);
             };
@@ -1162,6 +1218,7 @@ class GameUI {
                     cardDiv.onmouseup = () => {
                         cardDiv.style.cursor = 'grab';
                     };
+
                 } else {
                     cardDiv.textContent = '🂠';
 
@@ -1246,11 +1303,13 @@ class GameUI {
                 toCol,
                 cardIndex
             );
+
         } else if (sourceType === 'foundation') {
             success = this.game.moveFromFoundationToTableau(
                 sourceIndex,
                 toCol
             );
+
         } else if (sourceType === 'waste') {
             success = this.game.moveWasteToTableau(toCol);
         }
@@ -1279,8 +1338,10 @@ class GameUI {
                 'tableau',
                 sourceIndex
             );
+
         } else if (sourceType === 'waste') {
             success = this.game.moveToFoundation('waste', -1);
+
         } else if (sourceType === 'foundation') {
             success = false;
         }
@@ -1309,6 +1370,7 @@ class GameUI {
             if (this.game.flipTableauCard(colIndex, cardIndex)) {
                 this.render();
             }
+
             return;
         }
 
