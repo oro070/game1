@@ -886,19 +886,40 @@ class GameUI {
                      targetType === 'empty');
 
                 if (correct) {
-                    target.innerHTML = this.tutorialCard(
-                        this.tutorialStep === 0 ? '6' :
-                        this.tutorialStep === 1 ? 'A' : 'K',
+    // 移動元のカードを取得
+    const sourceSlot = this.tutorialRoot.querySelector(
+        '[data-tutorial-target="source"]'
+    );
 
-                        this.tutorialStep === 0 ? '♥' :
-                        this.tutorialStep === 1 ? '♦' : '♣',
+    // 移動元のカードを削除
+    if (sourceSlot) {
+        const sourceCard = sourceSlot.querySelector('.tutorial-card');
 
-                        false
-                    ) + '<small>移動できました！</small>';
+        if (sourceCard) {
+            sourceCard.remove();
+        }
 
-                    this.completeTutorialStep();
+        const sourceLabel = sourceSlot.querySelector('small');
 
-                } else {
+        if (sourceLabel) {
+            sourceLabel.textContent = '移動しました！';
+        }
+    }
+
+    // 移動先にカードを表示
+    target.innerHTML = this.tutorialCard(
+        this.tutorialStep === 0 ? '6' :
+        this.tutorialStep === 1 ? 'A' : 'K',
+
+        this.tutorialStep === 0 ? '♥' :
+        this.tutorialStep === 1 ? '♦' : '♣',
+
+        false
+    ) + '<small>移動できました！</small>';
+
+    this.completeTutorialStep();
+
+} else {
                     this.showTutorialFeedback(
                         'その場所には置けません。説明とヒントを確認してみましょう。'
                     );
