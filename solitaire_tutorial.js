@@ -55,7 +55,7 @@ class Solitaire {
         this.foundations = [[], [], [], []];
         this.tableau = [[], [], [], [], [], [], []];
 
-        // undo history: stores previous states (plain objects)
+        // 一手戻すための履歴
         this.history = [];
         this.historyLimit = historyLimit;
 
@@ -145,20 +145,22 @@ class Solitaire {
                sourceCard.getValue() === targetCard.getValue() - 1;
     }
 
-   canMoveToFoundation(card, foundationIndex) {
-    const foundation = this.foundations[foundationIndex];
-    const suits = ['♠', '♥', '♦', '♣'];
+    // 組札に置けるか確認
+    canMoveToFoundation(card, foundationIndex) {
+        const foundation = this.foundations[foundationIndex];
+        const suits = ['♠', '♥', '♦', '♣'];
 
-    if (foundation.length === 0) {
-        return card.rank === 'A' &&
-               card.suit === suits[foundationIndex];
+        // 空の組札には表示されているマークと同じAだけ置ける
+        if (foundation.length === 0) {
+            return card.rank === 'A' &&
+                   card.suit === suits[foundationIndex];
+        }
+
+        const topCard = foundation[foundation.length - 1];
+
+        return card.suit === topCard.suit &&
+               card.getValue() === topCard.getValue() + 1;
     }
-
-    const topCard = foundation[foundation.length - 1];
-
-    return card.suit === topCard.suit &&
-           card.getValue() === topCard.getValue() + 1;
-}
 
     canMoveFromFoundation(card, targetCard) {
         if (!targetCard) return false;
@@ -250,61 +252,57 @@ class Solitaire {
         return true;
     }
 
-   
-moveToFoundation(fromType, fromIndex, foundationIndex = null) {
-    let card = null;
+    // 組札へカードを移動
+    moveToFoundation(fromType, fromIndex, foundationIndex = null) {
+        let card = null;
 
-    if (fromType === 'waste' && this.waste.length > 0) {
-        card = this.waste[this.waste.length - 1];
+        if (fromType === 'waste' && this.waste.length > 0) {
+            card = this.waste[this.waste.length - 1];
 
-    } else if (fromType === 'tableau' &&
-               this.tableau[fromIndex].length > 0) {
-        card = this.tableau[fromIndex][
-            this.tableau[fromIndex].length - 1
-        ];
-    }
-
-    if (!card || !card.faceUp) return false;
-
-    // 置き先の組札を指定する
-    const targets = foundationIndex !== null
-        ? [foundationIndex]
-        : [0, 1, 2, 3];
-
-    for (const i of targets) {
-        if (i < 0 || i >= 4) continue;
-
-        // スートと数字が一致する場合だけ置ける
-        if (!this.canMoveToFoundation(card, i)) {
-            continue;
+        } else if (fromType === 'tableau' &&
+                   this.tableau[fromIndex].length > 0) {
+            card = this.tableau[fromIndex][
+                this.tableau[fromIndex].length - 1
+            ];
         }
 
-        const snapshot = this._serializeState();
+        if (!card || !card.faceUp) return false;
 
-        if (fromType === 'waste') {
-            this.waste.pop();
+        const targets = foundationIndex !== null
+            ? [foundationIndex]
+            : [0, 1, 2, 3];
 
-        } else if (fromType === 'tableau') {
-            this.tableau[fromIndex].pop();
+        for (const i of targets) {
+            if (i < 0 || i >= 4) continue;
 
-            // 下にある裏向きのカードをめくる
-            const column = this.tableau[fromIndex];
-
-            if (column.length > 0 &&
-                !column[column.length - 1].faceUp) {
-                column[column.length - 1].faceUp = true;
+            if (!this.canMoveToFoundation(card, i)) {
+                continue;
             }
+
+            const snapshot = this._serializeState();
+
+            if (fromType === 'waste') {
+                this.waste.pop();
+
+            } else if (fromType === 'tableau') {
+                this.tableau[fromIndex].pop();
+
+                const column = this.tableau[fromIndex];
+
+                if (column.length > 0 &&
+                    !column[column.length - 1].faceUp) {
+                    column[column.length - 1].faceUp = true;
+                }
+            }
+
+            this.foundations[i].push(card);
+            this._pushSnapshot(snapshot);
+
+            return true;
         }
 
-        this.foundations[i].push(card);
-        this._pushSnapshot(snapshot);
-
-        return true;
+        return false;
     }
-
-    return false;
-}
-
 
     moveFromFoundationToTableau(foundationIndex, tableauIndex) {
         const snapshot = this._serializeState();
@@ -702,7 +700,8 @@ class GameUI {
 
         this.renderTutorialStep();
     }
-        tutorialCard(rank, suit, draggable = true) {
+
+    tutorialCard(rank, suit, draggable = true) {
         const red = suit === '♥' || suit === '♦';
 
         return `<div class="tutorial-card ${red ? 'red' : ''}"
@@ -914,7 +913,6 @@ class GameUI {
         if (stock) {
             stock.onclick = () => {
 
-                // 山札はそのまま残し、引いたカードを右側のめくり札に表示する
                 const waste = this.tutorialRoot.querySelector(
                     '[data-tutorial-waste]'
                 );
@@ -986,7 +984,8 @@ class GameUI {
             container.style.display = 'flex';
         }
     }
-        init() {
+
+    init() {
         this.render();
     }
 
@@ -1221,17 +1220,15 @@ class GameUI {
                     cardDiv.onmouseup = () => {
                         cardDiv.style.cursor = 'grab';
                     };
-                
-} else {
-    // 裏向きのカードはクリックしてもめくれない
-    cardDiv.textContent = '🂠';
 
-    // クリックによる反転を禁止
-    cardDiv.onclick = null;
-    cardDiv.draggable = false;
-    cardDiv.style.cursor = 'default';
-}
+                } else {
+                    // 裏向きのカードはクリックしてもめくれない
+                    cardDiv.textContent = '🂠';
 
+                    cardDiv.onclick = null;
+                    cardDiv.draggable = false;
+                    cardDiv.style.cursor = 'default';
+                }
 
                 colDiv.appendChild(cardDiv);
             });
@@ -1326,33 +1323,33 @@ class GameUI {
     }
 
     handleDropOnFoundation(e, toFoundation) {
-    e.preventDefault();
+        e.preventDefault();
 
-    if (!this.draggedData) return;
+        if (!this.draggedData) return;
 
-    const { sourceType, sourceIndex } = this.draggedData;
-    let success = false;
+        const { sourceType, sourceIndex } = this.draggedData;
+        let success = false;
 
-    if (sourceType === 'tableau') {
-        success = this.game.moveToFoundation(
-            'tableau',
-            sourceIndex,
-            toFoundation
-        );
-    } else if (sourceType === 'waste') {
-        success = this.game.moveToFoundation(
-            'waste',
-            -1,
-            toFoundation
-        );
+        if (sourceType === 'tableau') {
+            success = this.game.moveToFoundation(
+                'tableau',
+                sourceIndex,
+                toFoundation
+            );
+        } else if (sourceType === 'waste') {
+            success = this.game.moveToFoundation(
+                'waste',
+                -1,
+                toFoundation
+            );
+        }
+
+        if (success) {
+            this.render();
+        }
+
+        this.draggedData = null;
     }
-
-    if (success) {
-        this.render();
-    }
-
-    this.draggedData = null;
-}
 
     handleDropOnStock(e) {
         e.preventDefault();
@@ -1364,22 +1361,20 @@ class GameUI {
         this.render();
     }
 
-   
-onCardClick(colIndex, cardIndex) {
-    const card = this.game.tableau[colIndex][cardIndex];
+    onCardClick(colIndex, cardIndex) {
+        const card = this.game.tableau[colIndex][cardIndex];
 
-    // 裏向きのカードは操作できない
-    if (!card || !card.faceUp) {
-        return;
+        // 裏向きのカードは操作できない
+        if (!card || !card.faceUp) {
+            return;
+        }
+
+        // 表向きのカードだけ組札への移動を試す
+        if (this.game.moveToFoundation('tableau', colIndex)) {
+            this.render();
+            return;
+        }
     }
-
-    // 表向きのカードだけ組札への移動を試す
-    if (this.game.moveToFoundation('tableau', colIndex)) {
-        this.render();
-        return;
-    }
-}
-
 }
 
 window.addEventListener('DOMContentLoaded', () => {
