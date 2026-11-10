@@ -145,16 +145,20 @@ class Solitaire {
                sourceCard.getValue() === targetCard.getValue() - 1;
     }
 
-    canMoveToFoundation(card, foundationIndex) {
-        const foundation = this.foundations[foundationIndex];
+   canMoveToFoundation(card, foundationIndex) {
+    const foundation = this.foundations[foundationIndex];
+    const suits = ['♠', '♥', '♦', '♣'];
 
-        if (foundation.length === 0) return card.rank === 'A';
-
-        const topCard = foundation[foundation.length - 1];
-
-        return card.suit === topCard.suit &&
-               card.getValue() === topCard.getValue() + 1;
+    if (foundation.length === 0) {
+        return card.rank === 'A' &&
+               card.suit === suits[foundationIndex];
     }
+
+    const topCard = foundation[foundation.length - 1];
+
+    return card.suit === topCard.suit &&
+           card.getValue() === topCard.getValue() + 1;
+}
 
     canMoveFromFoundation(card, targetCard) {
         if (!targetCard) return false;
@@ -1322,44 +1326,33 @@ class GameUI {
     }
 
     handleDropOnFoundation(e, toFoundation) {
-        e.preventDefault();
+    e.preventDefault();
 
-        if (!this.draggedData) return;
+    if (!this.draggedData) return;
 
-        const {
-            sourceType,
-            sourceIndex
-        } = this.draggedData;
+    const { sourceType, sourceIndex } = this.draggedData;
+    let success = false;
 
-        let success = false;
-
-        
-if (sourceType === 'tableau') {
-    success = this.game.moveToFoundation(
-        'tableau',
-        sourceIndex,
-        toFoundation
-    );
-
-} else if (sourceType === 'waste') {
-    success = this.game.moveToFoundation(
-        'waste',
-        -1,
-        toFoundation
-    );
-}
-
-
-        } else if (sourceType === 'foundation') {
-            success = false;
-        }
-
-        if (success) {
-            this.render();
-        }
-
-        this.draggedData = null;
+    if (sourceType === 'tableau') {
+        success = this.game.moveToFoundation(
+            'tableau',
+            sourceIndex,
+            toFoundation
+        );
+    } else if (sourceType === 'waste') {
+        success = this.game.moveToFoundation(
+            'waste',
+            -1,
+            toFoundation
+        );
     }
+
+    if (success) {
+        this.render();
+    }
+
+    this.draggedData = null;
+}
 
     handleDropOnStock(e) {
         e.preventDefault();
