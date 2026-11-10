@@ -1215,15 +1215,17 @@ class GameUI {
                     cardDiv.onmouseup = () => {
                         cardDiv.style.cursor = 'grab';
                     };
-                } else {
-                    cardDiv.textContent = '🂠';
+                
+} else {
+    // 裏向きのカードはクリックしてもめくれない
+    cardDiv.textContent = '🂠';
 
-                    cardDiv.onclick = () => {
-                        this.onCardClick(colIndex, cardIndex);
-                    };
+    // クリックによる反転を禁止
+    cardDiv.onclick = null;
+    cardDiv.draggable = false;
+    cardDiv.style.cursor = 'default';
+}
 
-                    cardDiv.style.cursor = 'pointer';
-                }
 
                 colDiv.appendChild(cardDiv);
             });
@@ -1359,22 +1361,22 @@ class GameUI {
         this.render();
     }
 
-    onCardClick(colIndex, cardIndex) {
-        const card = this.game.tableau[colIndex][cardIndex];
+   
+onCardClick(colIndex, cardIndex) {
+    const card = this.game.tableau[colIndex][cardIndex];
 
-        if (!card.faceUp) {
-            if (this.game.flipTableauCard(colIndex, cardIndex)) {
-                this.render();
-            }
-
-            return;
-        }
-
-        if (this.game.moveToFoundation('tableau', colIndex)) {
-            this.render();
-            return;
-        }
+    // 裏向きのカードは操作できない
+    if (!card || !card.faceUp) {
+        return;
     }
+
+    // 表向きのカードだけ組札への移動を試す
+    if (this.game.moveToFoundation('tableau', colIndex)) {
+        this.render();
+        return;
+    }
+}
+
 }
 
 window.addEventListener('DOMContentLoaded', () => {
