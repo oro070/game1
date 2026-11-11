@@ -1,4 +1,4 @@
-// solitaire_tutorial.js
+// solitaire.js
 
 class Card {
     constructor(suit, rank) {
