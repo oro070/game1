@@ -1,1 +1,1 @@
-# game1 ソリティア
+# solitaire
