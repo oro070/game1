@@ -1,1 +1,1 @@
-# solitaire
+# Solitaire Game
